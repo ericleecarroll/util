@@ -8,7 +8,37 @@ import java.util.List;
  *
  * Created by Eric on 7/3/2016.
  */
-public class BinaryTreeArray<V> {
+public class BinaryTreeArray<V> implements BinaryTree<V> {
+
+    // our node key
+    //
+    private static class IndexKey implements NodeKey {
+        private final int index;
+
+        IndexKey(int index) { this.index = index; }
+        private static NodeKey of(int index) { return new IndexKey(index); }
+
+        public int getIndex() { return index; }
+
+        @Override
+        public boolean equals(Object o) {
+            if (!(o instanceof IndexKey)) {
+                return false;
+            }
+            IndexKey indexKey = (IndexKey)o;
+            return index == indexKey.getIndex();
+        }
+
+        @Override
+        public int hashCode() {
+            return index;
+        }
+
+        @Override
+        public String toString() {
+            return String.format("Index: %d", index);
+        }
+    }
 
     /**
      * Return a new tree, initialized with the passed source
@@ -16,7 +46,7 @@ public class BinaryTreeArray<V> {
      * @param <U> type of values stored in tree
      * @return new tree
      */
-    public static <U> BinaryTreeArray of(final List<U> source) {
+    public static <U> BinaryTree of(final List<U> source) {
         return new BinaryTreeArray(source);
     }
 
@@ -25,7 +55,7 @@ public class BinaryTreeArray<V> {
      * @param <U> type of values stored in tree
      * @return new tree
      */
-    public static <U> BinaryTreeArray empty() {
+    public static <U> BinaryTree empty() {
         return new BinaryTreeArray();
     }
     
@@ -51,6 +81,7 @@ public class BinaryTreeArray<V> {
      * Return the count of nodes in the tree
      * @return count of nodex
      */
+    @Override
     public int size() {
         return array.size();
     }
@@ -60,129 +91,148 @@ public class BinaryTreeArray<V> {
      * @param value value to add to tree
      * @return index of newly added value
      */
-    public int add(final V value) {
+    @Override
+    public NodeKey add(final V value) {
         
         // add to the end of the array
         array.add(value);
         
         // the key is its array index
-        return array.size() - 1;
+        return IndexKey.of(array.size() - 1);
     }
 
     /**
-     * Return the value at a given index
-     * @param index the value we want to get
+     * Return the value at a given key
+     * @param key identifies the value we want to get
      * @return value
      */
-    public V get(final int index) {
+    @Override
+    public V get(final NodeKey key) {
         
         // confirm good index
-        confirmInBounds(index);
+        IndexKey indexKey = IndexKey.class.cast(key);
+        confirmInBounds(indexKey.getIndex());
         
         // return value at this index
-        return array.get(index);
+        return array.get(indexKey.getIndex());
     }
 
     /**
-     * Swap the values at the given indexes
-     * @param index1 swap this value
-     * @param index2 swap this value
+     * Swap the values at the given keys
+     * @param key1 swap this value
+     * @param key2 swap this value
      */
-    public void swap(final int index1, final int index2) {
+    @Override
+    public void swap(final NodeKey key1, final NodeKey key2) {
         
         // confirm good indexes
-        confirmInBounds(index1);
-        confirmInBounds(index2);
+        IndexKey indexKey1 = IndexKey.class.cast(key1);
+        confirmInBounds(indexKey1.getIndex());
+        IndexKey indexKey2 = IndexKey.class.cast(key2);
+        confirmInBounds(indexKey2.getIndex());
         
         // swap values at these indexes
-        V value1 = get(index1);
-        array.set(index1, get(index2));
-        array.set(index2, value1);
+        V value1 = get(key1);
+        array.set(indexKey1.getIndex(), get(indexKey2));
+        array.set(indexKey2.getIndex(), value1);
     }
 
     /**
-     * Return the index of the root node
-     * @return root index
+     * Return the key of the root node
+     * @return key for root node
      */
-    public int getRoot() {
+    @Override
+    public NodeKey getRoot() {
         confirmInBounds(0);
-        return 0;
+        return IndexKey.of(0);
     }
 
     /**
-     * Return true if the node at this index has a parent
-     * @param index of interest
+     * Return true if the node at this key has a parent
+     * @param key of interest
      * @return true if it has a parent
      */
-    public boolean hasParent(final int index) {
-        confirmInBounds(index);
-        return !outOfBounds(parentOf(index));
+    @Override
+    public boolean hasParent(final NodeKey key) {
+        IndexKey indexKey = IndexKey.class.cast(key);
+        confirmInBounds(indexKey.getIndex());
+        return !outOfBounds(parentOf(indexKey.getIndex()));
     }
 
     /**
-     * Return the index of the parent of the given index
-     * @param index we want the parent of this
-     * @return index of the parent
+     * Return the key of the parent of the node picked by this key
+     * @param key we want the parent of this key
+     * @return key of the parent
      */
-    public int getParent(final int index) {
+    @Override
+    public NodeKey getParent(final NodeKey key) {
         
         // confirm good index, and that it has a parent
-        confirmInBounds(index);
-        if (!hasParent(index)) {
-            throw new IllegalArgumentException(String.format("Index %d does not have a parent", index));
+        IndexKey indexKey = IndexKey.class.cast(key);
+        confirmInBounds(indexKey.getIndex());
+        if (!hasParent(key)) {
+            throw new IllegalArgumentException(String.format("Index %s does not have a parent", indexKey));
         }
         
         // return index of parent
-        return parentOf(index);
+        return IndexKey.of(parentOf(indexKey.getIndex()));
     }
 
     /**
-     * Return true if the node at this index has a left child
-     * @param index of interest
+     * Return true if the node at this key has a left child
+     * @param key of interest
      * @return true if it has a left child
      */
-    public boolean hasLeft(final int index) {
-        confirmInBounds(index);
-        return !outOfBounds(leftOf(index));
+    @Override
+    public boolean hasLeft(final NodeKey key) {
+        IndexKey indexKey = IndexKey.class.cast(key);
+        confirmInBounds(indexKey.getIndex());
+        return !outOfBounds(leftOf(indexKey.getIndex()));
     }
 
     /**
-     * Return the index of the left child of the given index
-     * @param index we want the left child of this
-     * @return index of left child
+     * Return the key of the left child of the given key
+     * @param key we want the left child of this
+     * @return key of left child
      */
-    public int getLeft(final int index) {
+    @Override
+    public NodeKey getLeft(final NodeKey key) {
         
         // confirm good index, and that it has a left child
-        confirmInBounds(index);
-        if (!hasLeft(index)) {
-            throw new IllegalArgumentException(String.format("Index %d does not have a left child", index));
+        IndexKey indexKey = IndexKey.class.cast(key);
+        confirmInBounds(indexKey.getIndex());
+        if (!hasLeft(key)) {
+            throw new IllegalArgumentException(String.format("Index %s does not have a left child", indexKey));
         }
         
         // return index of left child
-        return leftOf(index);
+        return IndexKey.of(leftOf(indexKey.getIndex()));
     }
 
     /**
-     * Return true if the node at this index has a right child
-     * @param index of interest
+     * Return true if the node at this key has a right child
+     * @param key of interest
      * @return true if it has a right child
      */
-    public boolean hasRight(final int index) {
-        confirmInBounds(index);
-        return !outOfBounds(rightOf(index));
+    @Override
+    public boolean hasRight(final NodeKey key) {
+        IndexKey indexKey = IndexKey.class.cast(key);
+        confirmInBounds(indexKey.getIndex());
+        return !outOfBounds(rightOf(indexKey.getIndex()));
     }
 
     /**
-     * Return the index of the right child of the given index
-     * @param index we want the right child of this
-     * @return index of right child
+     * Return the key of the right child of the given key
+     * @param key we want the right child of this
+     * @return key of right child
      */
-    public int getRight(final int index) {
-        if (!hasRight(index)) {
-            throw new IllegalArgumentException(String.format("Index %d does not have a right child", index));
+    @Override
+    public NodeKey getRight(final NodeKey key) {
+        IndexKey indexKey = IndexKey.class.cast(key);
+        if (!hasRight(key)) {
+            throw new IllegalArgumentException(String.format("Index %s does not have a right child", indexKey));
         }
-        return rightOf(index);
+        return IndexKey.of(rightOf(indexKey.getIndex()));
     }
 
     /**

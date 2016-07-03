@@ -2,6 +2,7 @@ package com.mrsnottypants.util.collection;
 
 import com.mrsnottypants.test.Exceptions;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.Assert;
 
@@ -13,64 +14,74 @@ import java.util.List;
  */
 public class BinaryTreeArrayTest {
 
-    private static final List<String> SOURCE = Arrays.asList("a", "b", "c", "d", "e", "f");
+    static final List<String> SOURCE = Arrays.asList("a", "b", "c", "d", "e", "f");
+
+    BinaryTree<String> tree;
+
+    NodeKey rootKey;
+    NodeKey leftKey;
+    NodeKey rightKey;
+    NodeKey leftLeftKey;
+    NodeKey leftRightKey;
+    NodeKey rightLeftKey;
+
+    @Before
+    public void before() {
+
+        tree = BinaryTreeArray.of(SOURCE);
+
+        rootKey = tree.getRoot();
+        leftKey = tree.getLeft(rootKey);
+        rightKey = tree.getRight(rootKey);
+        leftLeftKey = tree.getLeft(leftKey);
+        leftRightKey = tree.getRight(leftKey);
+        rightLeftKey = tree.getLeft(rightKey);
+    }
 
     @Test
     public void testSize() throws Exception {
-
-        BinaryTreeArray<String> tree = BinaryTreeArray.of(SOURCE);
-
         Assert.assertEquals(SOURCE.size(), tree.size());
     }
 
     @Test
     public void testAdd() throws Exception {
 
-        BinaryTreeArray<String> tree = BinaryTreeArray.empty();
-        Assert.assertEquals(0, tree.size());
+        BinaryTree<String> emptyTree = BinaryTreeArray.empty();
+        Assert.assertEquals(0, emptyTree.size());
 
-        for (int j = 0 ; j < SOURCE.size() ; j++) {
-            Assert.assertEquals(j, tree.add(SOURCE.get(j)));
-            Assert.assertEquals(SOURCE.get(j), tree.get(j));
-            Assert.assertEquals(j + 1, tree.size());
+        for (String entry : SOURCE) {
+            NodeKey key = emptyTree.add(entry);
+            Assert.assertEquals(entry, emptyTree.get(key));
         }
+
+        Assert.assertEquals(SOURCE.size(), emptyTree.size());
     }
 
     @Test
     public void testGet() throws Exception {
 
-        BinaryTreeArray<String> tree = BinaryTreeArray.of(SOURCE);
-
-        for (int j = 0 ; j < SOURCE.size() ; j++) {
-            Assert.assertEquals(SOURCE.get(j), tree.get(j));
-        }
-
-        // out of bounds
-        Assert.assertTrue(Exceptions.isOutOfBounds(tree::get, -1));
-        Assert.assertTrue(Exceptions.isOutOfBounds(tree::get, SOURCE.size()));
+        Assert.assertEquals(SOURCE.get(0), tree.get(rootKey));
+        Assert.assertEquals(SOURCE.get(1), tree.get(leftKey));
+        Assert.assertEquals(SOURCE.get(2), tree.get(rightKey));
+        Assert.assertEquals(SOURCE.get(3), tree.get(leftLeftKey));
+        Assert.assertEquals(SOURCE.get(4), tree.get(leftRightKey));
+        Assert.assertEquals(SOURCE.get(5), tree.get(rightLeftKey));
     }
 
     @Test
     public void testSwap() throws Exception {
 
-        BinaryTreeArray<String> tree = BinaryTreeArray.of(SOURCE);
-        tree.swap(0, 2);
+        tree.swap(rootKey, rightKey);
 
-        Assert.assertEquals(SOURCE.get(0), tree.get(2));
-        Assert.assertEquals(SOURCE.get(2), tree.get(0));
+        Assert.assertEquals(SOURCE.get(0), tree.get(rightKey));
+        Assert.assertEquals(SOURCE.get(2), tree.get(rootKey));
         Assert.assertEquals(SOURCE.size(), tree.size());
-
-        // out of bounds
-        Assert.assertTrue(Exceptions.isOutOfBounds(tree::swap, -1, 0));
-        Assert.assertTrue(Exceptions.isOutOfBounds(tree::swap, 0, SOURCE.size()));
     }
 
     @Test
     public void testGetRoot() throws Exception {
 
-        BinaryTreeArray<String> tree = BinaryTreeArray.of(SOURCE);
-
-        Assert.assertEquals(0, tree.getRoot());
+        Assert.assertEquals(SOURCE.get(0), tree.get(rootKey));
 
         // out of bounds
         tree = BinaryTreeArray.empty();
@@ -80,111 +91,75 @@ public class BinaryTreeArrayTest {
     @Test
     public void testHasParent() throws Exception {
 
-        BinaryTreeArray<String> tree = BinaryTreeArray.of(SOURCE);
+        Assert.assertTrue(tree.hasParent(leftKey));
+        Assert.assertTrue(tree.hasParent(rightKey));
+        Assert.assertTrue(tree.hasParent(leftLeftKey));
+        Assert.assertTrue(tree.hasParent(leftRightKey));
+        Assert.assertTrue(tree.hasParent(rightLeftKey));
 
-        Assert.assertTrue(tree.hasParent(1));
-        Assert.assertTrue(tree.hasParent(2));
-        Assert.assertTrue(tree.hasParent(3));
-        Assert.assertTrue(tree.hasParent(4));
-        Assert.assertTrue(tree.hasParent(5));
-
-        Assert.assertFalse(tree.hasParent(tree.getRoot()));
-
-        // out of bounds
-        Assert.assertTrue(Exceptions.isOutOfBounds(tree::hasParent, -1));
-        Assert.assertTrue(Exceptions.isOutOfBounds(tree::hasParent, SOURCE.size()));
+        Assert.assertFalse(tree.hasParent(rootKey));
     }
 
     @Test
     public void testGetParent() throws Exception {
 
-        BinaryTreeArray<String> tree = BinaryTreeArray.of(SOURCE);
-
-        Assert.assertEquals(0, tree.getParent(1));
-        Assert.assertEquals(0, tree.getParent(2));
-        Assert.assertEquals(1, tree.getParent(3));
-        Assert.assertEquals(1, tree.getParent(4));
-        Assert.assertEquals(2, tree.getParent(5));
-
-        // out of bounds
-        Assert.assertTrue(Exceptions.isOutOfBounds(tree::getParent, -1));
-        Assert.assertTrue(Exceptions.isOutOfBounds(tree::getParent, SOURCE.size()));
+        Assert.assertEquals(rootKey, tree.getParent(leftKey));
+        Assert.assertEquals(rootKey, tree.getParent(rightKey));
+        Assert.assertEquals(leftKey, tree.getParent(leftLeftKey));
+        Assert.assertEquals(leftKey, tree.getParent(leftRightKey));
+        Assert.assertEquals(rightKey, tree.getParent(rightLeftKey));
 
         // illegal
-        Assert.assertTrue(Exceptions.isIllegal(tree::getParent, 0));
+        Assert.assertTrue(Exceptions.isIllegal(tree::getParent, rootKey));
     }
 
     @Test
     public void testHasLeft() throws Exception {
 
-        BinaryTreeArray<String> tree = BinaryTreeArray.of(SOURCE);
+        Assert.assertTrue(tree.hasLeft(rootKey));
+        Assert.assertTrue(tree.hasLeft(leftKey));
+        Assert.assertTrue(tree.hasLeft(rightKey));
 
-        Assert.assertTrue(tree.hasLeft(0));
-        Assert.assertTrue(tree.hasLeft(1));
-        Assert.assertTrue(tree.hasLeft(2));
-
-        Assert.assertFalse(tree.hasLeft(3));
-        Assert.assertFalse(tree.hasLeft(4));
-        Assert.assertFalse(tree.hasLeft(5));
-
-        // out of bounds
-        Assert.assertTrue(Exceptions.isOutOfBounds(tree::hasLeft, -1));
-        Assert.assertTrue(Exceptions.isOutOfBounds(tree::hasLeft, SOURCE.size()));
+        Assert.assertFalse(tree.hasLeft(leftLeftKey));
+        Assert.assertFalse(tree.hasLeft(leftRightKey));
+        Assert.assertFalse(tree.hasLeft(rightLeftKey));
     }
 
     @Test
     public void testGetLeft() throws Exception {
 
-        BinaryTreeArray<String> tree = BinaryTreeArray.of(SOURCE);
-
-        Assert.assertEquals(1, tree.getLeft(0));
-        Assert.assertEquals(3, tree.getLeft(1));
-        Assert.assertEquals(5, tree.getLeft(2));
-
-        // out of bounds
-        Assert.assertTrue(Exceptions.isOutOfBounds(tree::getLeft, -1));
-        Assert.assertTrue(Exceptions.isOutOfBounds(tree::getLeft, SOURCE.size()));
+        Assert.assertEquals(leftKey, tree.getLeft(rootKey));
+        Assert.assertEquals(leftLeftKey, tree.getLeft(leftKey));
+        Assert.assertEquals(rightLeftKey, tree.getLeft(rightKey));
 
         // illegal
-        Assert.assertTrue(Exceptions.isIllegal(tree::getLeft, 3));
-        Assert.assertTrue(Exceptions.isIllegal(tree::getLeft, 4));
-        Assert.assertTrue(Exceptions.isIllegal(tree::getLeft, 5));
+        Assert.assertTrue(Exceptions.isIllegal(tree::getLeft, leftLeftKey));
+        Assert.assertTrue(Exceptions.isIllegal(tree::getLeft, leftRightKey));
+        Assert.assertTrue(Exceptions.isIllegal(tree::getLeft, rightLeftKey));
     }
 
     @Test
     public void testHasRight() throws Exception {
 
-        BinaryTreeArray<String> tree = BinaryTreeArray.of(SOURCE);
+        Assert.assertTrue(tree.hasRight(rootKey));
+        Assert.assertTrue(tree.hasRight(leftKey));
 
-        Assert.assertTrue(tree.hasRight(0));
-        Assert.assertTrue(tree.hasRight(1));
-
-        Assert.assertFalse(tree.hasRight(2));
-        Assert.assertFalse(tree.hasRight(3));
-        Assert.assertFalse(tree.hasRight(4));
-        Assert.assertFalse(tree.hasRight(5));
-
-        // out of bounds
-        Assert.assertTrue(Exceptions.isOutOfBounds(tree::hasRight, -1));
-        Assert.assertTrue(Exceptions.isOutOfBounds(tree::hasRight, SOURCE.size()));
+        Assert.assertFalse(tree.hasRight(rightKey));
+        Assert.assertFalse(tree.hasRight(leftLeftKey));
+        Assert.assertFalse(tree.hasRight(leftRightKey));
+        Assert.assertFalse(tree.hasRight(rightLeftKey));
     }
 
     @Test
     public void testGetRight() throws Exception {
 
-        BinaryTreeArray<String> tree = BinaryTreeArray.of(SOURCE);
-
-        Assert.assertEquals(2, tree.getRight(0));
-        Assert.assertEquals(4, tree.getRight(1));
-
-        // out of bounds
-        Assert.assertTrue(Exceptions.isOutOfBounds(tree::getRight, -1));
-        Assert.assertTrue(Exceptions.isOutOfBounds(tree::getRight, SOURCE.size()));
+        Assert.assertEquals(rightKey, tree.getRight(rootKey));
+        Assert.assertEquals(leftRightKey, tree.getRight(leftKey));
 
         // illegal
-        Assert.assertTrue(Exceptions.isIllegal(tree::getRight, 2));
-        Assert.assertTrue(Exceptions.isIllegal(tree::getRight, 3));
-        Assert.assertTrue(Exceptions.isIllegal(tree::getRight, 4));
-        Assert.assertTrue(Exceptions.isIllegal(tree::getRight, 5));
+        Assert.assertTrue(Exceptions.isIllegal(tree::getRight, rightKey));
+        Assert.assertTrue(Exceptions.isIllegal(tree::getRight, leftLeftKey));
+        Assert.assertTrue(Exceptions.isIllegal(tree::getRight, leftRightKey));
+        Assert.assertTrue(Exceptions.isIllegal(tree::getRight, rightLeftKey));
     }
 }
