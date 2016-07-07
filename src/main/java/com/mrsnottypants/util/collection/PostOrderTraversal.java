@@ -22,6 +22,9 @@ public class PostOrderTraversal<E> implements Iterator<E> {
      */
     public PostOrderTraversal(BinaryTree<E> tree) {
         this.tree = tree;
+
+        // first node is the leftest most leaf
+        // if leftest has a right node, we want its leftest node, and so on
         nextKey = tree.getRoot().flatMap(key -> tree.getLeftestLeaf(key));
     }
 
@@ -40,6 +43,9 @@ public class PostOrderTraversal<E> implements Iterator<E> {
      */
     @Override
     public E next() {
+
+        // sanity check - there is a next
+        if (!hasNext()) { throw new IllegalStateException("There is no next node"); }
 
         // save current 'next' value before recalculating
         E next = tree.get(nextKey.get());

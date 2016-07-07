@@ -201,4 +201,18 @@ public interface BinaryTree<E> {
         // if we found a matching ancestor, return the root of its right branch
         return parent.map(k -> getRight(k).get());
     }
+
+    /**
+     * Return the closest right node to the given node
+     * Closest is the node's right, followed by the right node of the first ancestor where the given node is within
+     * its left branch.
+     * @param key want closest right to this
+     * @return closest right, or empty if no closest right
+     */
+    default Optional<NodeKey> getClosestRight(NodeKey key) {
+
+        // 1st option - node has a right
+        // 2nd option - right node of 1st ancestor for which we are in its left branch
+        return hasRight(key) ? getRight(key) : getParentRightFromLeft(key);
+    }
 }

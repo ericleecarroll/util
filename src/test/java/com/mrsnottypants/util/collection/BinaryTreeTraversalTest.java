@@ -1,5 +1,6 @@
 package com.mrsnottypants.util.collection;
 
+import com.mrsnottypants.test.Exceptions;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,6 +33,9 @@ public class BinaryTreeTraversalTest {
             Assert.assertEquals(c, iterator.next());
         }
         Assert.assertFalse(iterator.hasNext());
+
+        // iterate off end
+        Assert.assertTrue(Exceptions.isIllegalState(iterator::next));
     }
 
     @Test
@@ -46,10 +50,13 @@ public class BinaryTreeTraversalTest {
             Assert.assertEquals(c, iterator.next());
         }
         Assert.assertFalse(iterator.hasNext());
+
+        // iterate off end
+        Assert.assertTrue(Exceptions.isIllegalState(iterator::next));
     }
 
     @Test
-    public void testPostOrder() {
+    public void testPostOrder() throws Exception {
 
         final List<Character> expected = Arrays.asList('h', 'i', 'd', 'j', 'e', 'b', 'f', 'g', 'c', 'a');
 
@@ -60,5 +67,8 @@ public class BinaryTreeTraversalTest {
             Assert.assertEquals(c, iterator.next());
         }
         Assert.assertFalse(iterator.hasNext());
+
+        // iterate off end
+        Assert.assertTrue(Exceptions.isIllegalState(iterator::next));
     }
 }

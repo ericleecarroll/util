@@ -221,4 +221,18 @@ public class BinaryTreeArrayTest {
         Assert.assertFalse(tree.getParentRightFromLeft(rootKey).isPresent());
         Assert.assertFalse(tree.getParentRightFromLeft(rightKey).isPresent());
     }
+
+
+
+    @Test
+    public void testGetClosestRight() {
+
+        Assert.assertEquals(leftRightKey, tree.getClosestRight(leftLeftKey).get());
+        Assert.assertEquals(rightKey, tree.getClosestRight(leftRightKey).get());
+        Assert.assertEquals(leftRightKey, tree.getClosestRight(leftKey).get());
+        Assert.assertEquals(rightKey, tree.getClosestRight(rootKey).get());
+
+        Assert.assertFalse(tree.getClosestRight(rightLeftKey).isPresent());
+        Assert.assertFalse(tree.getClosestRight(rightKey).isPresent());
+    }
 }

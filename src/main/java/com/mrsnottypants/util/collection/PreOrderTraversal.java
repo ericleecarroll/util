@@ -22,6 +22,8 @@ public class PreOrderTraversal<E> implements Iterator<E> {
      */
     public PreOrderTraversal(BinaryTree<E> tree) {
         this.tree = tree;
+
+        // first node is the root node
         nextKey = tree.getRoot();
     }
 
@@ -41,16 +43,16 @@ public class PreOrderTraversal<E> implements Iterator<E> {
     @Override
     public E next() {
 
+        // sanity check - there is a next
+        if (!hasNext()) { throw new IllegalStateException("There is no next node"); }
+
         // remember the 'next' value before we recalculate
         E next = tree.get(nextKey.get());
 
         // calculate next
         // 1st - if there is a left child, that is our next node
-        Optional<NodeKey> left = tree.getLeft(nextKey.get());
-
-        // 2nd - if there is no left child, the next node is the right child of the first ancestor for which we are
-        // in its left branch
-        nextKey = left.isPresent() ? left : tree.getParentRightFromLeft(nextKey.get());
+        // 2nd - otherwise, look for the closest right node (our right, then an ancestors)
+        nextKey = tree.hasLeft(nextKey.get()) ? tree.getLeft(nextKey.get()) : tree.getClosestRight(nextKey.get());
 
         // done!
         return next;

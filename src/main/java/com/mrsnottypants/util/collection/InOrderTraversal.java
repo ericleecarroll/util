@@ -23,7 +23,7 @@ public class InOrderTraversal<E> implements Iterator<E> {
     InOrderTraversal(final BinaryTree<E> tree) {
         this.tree = tree;
 
-        // calculate the first 'next'
+        // first node is the leftest most node from the root
         nextKey = tree.getRoot().flatMap(key -> tree.getLeftest(key));
     }
 
@@ -43,15 +43,18 @@ public class InOrderTraversal<E> implements Iterator<E> {
     @Override
     public E next() {
 
+        // sanity check - there is a next
+        if (!hasNext()) { throw new IllegalStateException("There is no next node"); }
+
         // this is what we'll return
         E next = tree.get(nextKey.get());
 
         // calculate 'next' node
         // 1st - if there is a right branch, the next node is the leftest most node in that right branch
-        Optional<NodeKey> leftestFromRight = tree.getRight(nextKey.get()).flatMap(key -> tree.getLeftest(key));
-
         // 2nd - otherwise, the next node is the first ancestor for which we are in its left branch
-        nextKey = leftestFromRight.isPresent() ? leftestFromRight : tree.getParentFromLeft(nextKey.get());
+        nextKey = tree.hasRight(nextKey.get()) ?
+                tree.getRight(nextKey.get()).flatMap(key -> tree.getLeftest(key)) :
+                tree.getParentFromLeft(nextKey.get());
 
         // done!
         return next;
