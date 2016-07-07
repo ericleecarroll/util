@@ -2,13 +2,14 @@ package com.mrsnottypants.util.collection;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Nearly complete binary tree, stored in an array(list)
  *
  * Created by Eric on 7/3/2016.
  */
-public class BinaryTreeArray<V> implements BinaryTree<V> {
+public class BinaryTreeArray<E> implements BinaryTree<E> {
 
     // our node key
     //
@@ -43,24 +44,24 @@ public class BinaryTreeArray<V> implements BinaryTree<V> {
     /**
      * Return a new tree, initialized with the passed source
      * @param source to initialize tree
-     * @param <U> type of values stored in tree
+     * @param <F> type of values stored in tree
      * @return new tree
      */
-    public static <U> BinaryTree of(final List<U> source) {
+    public static <F> BinaryTree of(final List<F> source) {
         return new BinaryTreeArray(source);
     }
 
     /**
      * Return a new, empty tree
-     * @param <U> type of values stored in tree
+     * @param <F> type of values stored in tree
      * @return new tree
      */
-    public static <U> BinaryTree empty() {
+    public static <F> BinaryTree empty() {
         return new BinaryTreeArray();
     }
     
     // internal storage of tree
-    private final List<V> array;
+    private final List<E> array;
 
     /**
      * Construct an empty binary tree
@@ -73,7 +74,7 @@ public class BinaryTreeArray<V> implements BinaryTree<V> {
      * Construct a binary tree from a given list of values
      * @param source initial contents of binary tree
      */
-    private BinaryTreeArray(final List<V> source) {
+    private BinaryTreeArray(final List<E> source) {
         array = new ArrayList<>(source);
     }
 
@@ -92,7 +93,7 @@ public class BinaryTreeArray<V> implements BinaryTree<V> {
      * @return index of newly added value
      */
     @Override
-    public NodeKey add(final V value) {
+    public NodeKey add(final E value) {
         
         // add to the end of the array
         array.add(value);
@@ -107,7 +108,7 @@ public class BinaryTreeArray<V> implements BinaryTree<V> {
      * @return value
      */
     @Override
-    public V get(final NodeKey key) {
+    public E get(final NodeKey key) {
         
         // confirm good index
         IndexKey indexKey = IndexKey.class.cast(key);
@@ -132,19 +133,18 @@ public class BinaryTreeArray<V> implements BinaryTree<V> {
         confirmInBounds(indexKey2.getIndex());
         
         // swap values at these indexes
-        V value1 = get(key1);
+        E value1 = get(key1);
         array.set(indexKey1.getIndex(), get(indexKey2));
         array.set(indexKey2.getIndex(), value1);
     }
 
     /**
-     * Return the key of the root node
-     * @return key for root node
+     * Return the key of the root node, or empty if tree empty
+     * @return key for root node, or empty if tree empty
      */
     @Override
-    public NodeKey getRoot() {
-        confirmInBounds(0);
-        return IndexKey.of(0);
+    public Optional<NodeKey> getRoot() {
+        return outOfBounds(0) ? Optional.empty() : Optional.of(IndexKey.of(0));
     }
 
     /**
@@ -162,20 +162,17 @@ public class BinaryTreeArray<V> implements BinaryTree<V> {
     /**
      * Return the key of the parent of the node picked by this key
      * @param key we want the parent of this key
-     * @return key of the parent
+     * @return key of the parent, or empty if no parent
      */
     @Override
-    public NodeKey getParent(final NodeKey key) {
+    public Optional<NodeKey> getParent(final NodeKey key) {
         
         // confirm good index, and that it has a parent
         IndexKey indexKey = IndexKey.class.cast(key);
         confirmInBounds(indexKey.getIndex());
-        if (!hasParent(key)) {
-            throw new IllegalArgumentException(String.format("Index %s does not have a parent", indexKey));
-        }
-        
-        // return index of parent
-        return IndexKey.of(parentOf(indexKey.getIndex()));
+
+        // return parent, or empty if no parent
+        return hasParent(key) ? Optional.of(IndexKey.of(parentOf(indexKey.getIndex()))) : Optional.empty();
     }
 
     /**
@@ -193,20 +190,16 @@ public class BinaryTreeArray<V> implements BinaryTree<V> {
     /**
      * Return the key of the left child of the given key
      * @param key we want the left child of this
-     * @return key of left child
+     * @return key of left child, or empty if no left child
      */
     @Override
-    public NodeKey getLeft(final NodeKey key) {
+    public Optional<NodeKey> getLeft(final NodeKey key) {
         
         // confirm good index, and that it has a left child
         IndexKey indexKey = IndexKey.class.cast(key);
         confirmInBounds(indexKey.getIndex());
-        if (!hasLeft(key)) {
-            throw new IllegalArgumentException(String.format("Index %s does not have a left child", indexKey));
-        }
-        
-        // return index of left child
-        return IndexKey.of(leftOf(indexKey.getIndex()));
+
+        return hasLeft(key) ? Optional.of(IndexKey.of(leftOf(indexKey.getIndex()))) : Optional.empty();
     }
 
     /**
@@ -224,15 +217,14 @@ public class BinaryTreeArray<V> implements BinaryTree<V> {
     /**
      * Return the key of the right child of the given key
      * @param key we want the right child of this
-     * @return key of right child
+     * @return key of right child, or empty if no right child
      */
     @Override
-    public NodeKey getRight(final NodeKey key) {
+    public Optional<NodeKey> getRight(final NodeKey key) {
         IndexKey indexKey = IndexKey.class.cast(key);
-        if (!hasRight(key)) {
-            throw new IllegalArgumentException(String.format("Index %s does not have a right child", indexKey));
-        }
-        return IndexKey.of(rightOf(indexKey.getIndex()));
+        confirmInBounds(indexKey.getIndex());
+
+        return hasRight(key) ? Optional.of(IndexKey.of(rightOf(indexKey.getIndex()))) : Optional.empty();
     }
 
     /**

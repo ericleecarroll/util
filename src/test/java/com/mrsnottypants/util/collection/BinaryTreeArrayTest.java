@@ -8,6 +8,7 @@ import org.junit.Assert;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Created by Eric on 7/3/2016.
@@ -30,21 +31,21 @@ public class BinaryTreeArrayTest {
 
         tree = BinaryTreeArray.of(SOURCE);
 
-        rootKey = tree.getRoot();
-        leftKey = tree.getLeft(rootKey);
-        rightKey = tree.getRight(rootKey);
-        leftLeftKey = tree.getLeft(leftKey);
-        leftRightKey = tree.getRight(leftKey);
-        rightLeftKey = tree.getLeft(rightKey);
+        rootKey = tree.getRoot().get();
+        leftKey = tree.getLeft(rootKey).get();
+        rightKey = tree.getRight(rootKey).get();
+        leftLeftKey = tree.getLeft(leftKey).get();
+        leftRightKey = tree.getRight(leftKey).get();
+        rightLeftKey = tree.getLeft(rightKey).get();
     }
 
     @Test
-    public void testSize() throws Exception {
+    public void testSize() {
         Assert.assertEquals(SOURCE.size(), tree.size());
     }
 
     @Test
-    public void testAdd() throws Exception {
+    public void testAdd() {
 
         BinaryTree<String> emptyTree = BinaryTreeArray.empty();
         Assert.assertEquals(0, emptyTree.size());
@@ -58,7 +59,7 @@ public class BinaryTreeArrayTest {
     }
 
     @Test
-    public void testGet() throws Exception {
+    public void testGet() {
 
         Assert.assertEquals(SOURCE.get(0), tree.get(rootKey));
         Assert.assertEquals(SOURCE.get(1), tree.get(leftKey));
@@ -69,7 +70,7 @@ public class BinaryTreeArrayTest {
     }
 
     @Test
-    public void testSwap() throws Exception {
+    public void testSwap() {
 
         tree.swap(rootKey, rightKey);
 
@@ -79,17 +80,18 @@ public class BinaryTreeArrayTest {
     }
 
     @Test
-    public void testGetRoot() throws Exception {
+    public void testGetRoot() {
 
         Assert.assertEquals(SOURCE.get(0), tree.get(rootKey));
 
         // out of bounds
         tree = BinaryTreeArray.empty();
-        Assert.assertTrue(Exceptions.isOutOfBounds(tree::getRoot));
+        Optional<NodeKey> root = tree.getRoot();
+        Assert.assertFalse(root.isPresent());
     }
 
     @Test
-    public void testHasParent() throws Exception {
+    public void testHasParent() {
 
         Assert.assertTrue(tree.hasParent(leftKey));
         Assert.assertTrue(tree.hasParent(rightKey));
@@ -101,20 +103,20 @@ public class BinaryTreeArrayTest {
     }
 
     @Test
-    public void testGetParent() throws Exception {
+    public void testGetParent() {
 
-        Assert.assertEquals(rootKey, tree.getParent(leftKey));
-        Assert.assertEquals(rootKey, tree.getParent(rightKey));
-        Assert.assertEquals(leftKey, tree.getParent(leftLeftKey));
-        Assert.assertEquals(leftKey, tree.getParent(leftRightKey));
-        Assert.assertEquals(rightKey, tree.getParent(rightLeftKey));
+        Assert.assertEquals(rootKey, tree.getParent(leftKey).get());
+        Assert.assertEquals(rootKey, tree.getParent(rightKey).get());
+        Assert.assertEquals(leftKey, tree.getParent(leftLeftKey).get());
+        Assert.assertEquals(leftKey, tree.getParent(leftRightKey).get());
+        Assert.assertEquals(rightKey, tree.getParent(rightLeftKey).get());
 
-        // illegal
-        Assert.assertTrue(Exceptions.isIllegal(tree::getParent, rootKey));
+        // no parent
+        Assert.assertFalse(tree.getParent(rootKey).isPresent());
     }
 
     @Test
-    public void testHasLeft() throws Exception {
+    public void testHasLeft() {
 
         Assert.assertTrue(tree.hasLeft(rootKey));
         Assert.assertTrue(tree.hasLeft(leftKey));
@@ -126,20 +128,20 @@ public class BinaryTreeArrayTest {
     }
 
     @Test
-    public void testGetLeft() throws Exception {
+    public void testGetLeft() {
 
-        Assert.assertEquals(leftKey, tree.getLeft(rootKey));
-        Assert.assertEquals(leftLeftKey, tree.getLeft(leftKey));
-        Assert.assertEquals(rightLeftKey, tree.getLeft(rightKey));
+        Assert.assertEquals(leftKey, tree.getLeft(rootKey).get());
+        Assert.assertEquals(leftLeftKey, tree.getLeft(leftKey).get());
+        Assert.assertEquals(rightLeftKey, tree.getLeft(rightKey).get());
 
-        // illegal
-        Assert.assertTrue(Exceptions.isIllegal(tree::getLeft, leftLeftKey));
-        Assert.assertTrue(Exceptions.isIllegal(tree::getLeft, leftRightKey));
-        Assert.assertTrue(Exceptions.isIllegal(tree::getLeft, rightLeftKey));
+        // no left
+        Assert.assertFalse(tree.getLeft(leftLeftKey).isPresent());
+        Assert.assertFalse(tree.getLeft(leftRightKey).isPresent());
+        Assert.assertFalse(tree.getLeft(rightLeftKey).isPresent());
     }
 
     @Test
-    public void testHasRight() throws Exception {
+    public void testHasRight() {
 
         Assert.assertTrue(tree.hasRight(rootKey));
         Assert.assertTrue(tree.hasRight(leftKey));
@@ -151,15 +153,72 @@ public class BinaryTreeArrayTest {
     }
 
     @Test
-    public void testGetRight() throws Exception {
+    public void testGetRight() {
 
-        Assert.assertEquals(rightKey, tree.getRight(rootKey));
-        Assert.assertEquals(leftRightKey, tree.getRight(leftKey));
+        Assert.assertEquals(rightKey, tree.getRight(rootKey).get());
+        Assert.assertEquals(leftRightKey, tree.getRight(leftKey).get());
 
-        // illegal
-        Assert.assertTrue(Exceptions.isIllegal(tree::getRight, rightKey));
-        Assert.assertTrue(Exceptions.isIllegal(tree::getRight, leftLeftKey));
-        Assert.assertTrue(Exceptions.isIllegal(tree::getRight, leftRightKey));
-        Assert.assertTrue(Exceptions.isIllegal(tree::getRight, rightLeftKey));
+        // no right
+        Assert.assertFalse(tree.getRight(rightKey).isPresent());
+        Assert.assertFalse(tree.getRight(leftLeftKey).isPresent());
+        Assert.assertFalse(tree.getRight(leftRightKey).isPresent());
+        Assert.assertFalse(tree.getRight(rightLeftKey).isPresent());
+    }
+    
+    @Test
+    public void testIsLeft() {
+
+        Assert.assertTrue(tree.isLeft(rootKey, leftKey));
+        Assert.assertFalse(tree.isLeft(leftKey, rootKey));
+        Assert.assertFalse(tree.isLeft(rootKey, rightKey));
+        Assert.assertFalse(tree.isLeft(leftKey, leftKey));
+        Assert.assertFalse(tree.isLeft(leftLeftKey, leftRightKey));
+    }
+
+    @Test
+    public void testGetLeftest() {
+
+        Assert.assertEquals(leftLeftKey, tree.getLeftest(rootKey).get());
+        Assert.assertEquals(leftLeftKey, tree.getLeftest(leftKey).get());
+        Assert.assertEquals(rightLeftKey, tree.getLeftest(rightKey).get());
+        Assert.assertEquals(leftLeftKey, tree.getLeftest(leftLeftKey).get());
+        Assert.assertEquals(rightLeftKey, tree.getLeftest(rightLeftKey).get());
+    }
+
+    @Test
+    public void testGetLeftestLeaf() {
+
+        // TODO - cannot perform proper test until I implement a sparse tree
+
+        Assert.assertEquals(leftLeftKey, tree.getLeftestLeaf(rootKey).get());
+        Assert.assertEquals(leftLeftKey, tree.getLeftestLeaf(leftKey).get());
+        Assert.assertEquals(rightLeftKey, tree.getLeftestLeaf(rightKey).get());
+
+        Assert.assertEquals(leftLeftKey, tree.getLeftestLeaf(leftLeftKey).get());
+        Assert.assertEquals(rightLeftKey, tree.getLeftestLeaf(rightLeftKey).get());
+    }
+
+    @Test
+    public void testGetParentFromLeft() {
+
+        Assert.assertEquals(leftKey, tree.getParentFromLeft(leftLeftKey).get());
+        Assert.assertEquals(rootKey, tree.getParentFromLeft(leftRightKey).get());
+        Assert.assertEquals(rightKey, tree.getParentFromLeft(rightLeftKey).get());
+        Assert.assertEquals(rootKey, tree.getParentFromLeft(leftKey).get());
+
+        Assert.assertFalse(tree.getParentFromLeft(rootKey).isPresent());
+        Assert.assertFalse(tree.getParentFromLeft(rightKey).isPresent());
+    }
+
+    @Test
+    public void testGetParentRightFromLeft() {
+
+        Assert.assertEquals(leftRightKey, tree.getParentRightFromLeft(leftLeftKey).get());
+        Assert.assertEquals(rightKey, tree.getParentRightFromLeft(leftRightKey).get());
+        Assert.assertEquals(rightKey, tree.getParentRightFromLeft(leftKey).get());
+
+        Assert.assertFalse(tree.getParentRightFromLeft(rightLeftKey).isPresent());
+        Assert.assertFalse(tree.getParentRightFromLeft(rootKey).isPresent());
+        Assert.assertFalse(tree.getParentRightFromLeft(rightKey).isPresent());
     }
 }
