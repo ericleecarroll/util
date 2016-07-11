@@ -71,4 +71,21 @@ public class BinaryTreeTraversalTest {
         // iterate off end
         Assert.assertTrue(Exceptions.isIllegalState(iterator::next));
     }
+
+    @Test
+    public void testLevelOrder() throws Exception {
+
+        final List<Character> expected = Arrays.asList('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j');
+
+        // get iterator
+        Iterator<Character> iterator = BinaryTreeTraversal.LEVEL_ORDER.iteratorFor(tree);
+        for (Character c : expected) {
+            Assert.assertTrue(iterator.hasNext());
+            Assert.assertEquals(c, iterator.next());
+        }
+        Assert.assertFalse(iterator.hasNext());
+
+        // iterate off end
+        Assert.assertTrue(Exceptions.isIllegalState(iterator::next));
+    }
 }

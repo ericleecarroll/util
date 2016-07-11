@@ -24,9 +24,12 @@ public enum BinaryTreeTraversal {
         public <E> Iterator<E> iteratorFor(BinaryTree<E> tree) {
             return new PostOrderTraversal<>(tree);
         }
+    },
+    LEVEL_ORDER {
+      @Override
+        public <E> Iterator<E> iteratorFor(BinaryTree<E> tree) { return new LevelOrderTraversal<>(tree); }
     }
     ;
-//    LEVEL_ORDER
 
     abstract <E> Iterator<E> iteratorFor(BinaryTree<E> tree);
 }
