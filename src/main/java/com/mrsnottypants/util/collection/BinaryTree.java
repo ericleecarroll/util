@@ -40,6 +40,12 @@ public interface BinaryTree<E> {
     void swap(NodeKey key1, NodeKey key2);
 
     /**
+     * Return true if tree has a root
+     * @return true if tree has a root
+     */
+    default boolean hasRoot() { return size() > 0; }
+
+    /**
      * Return a key for the root node
      * @return root node, or empty for an empty tree
      */

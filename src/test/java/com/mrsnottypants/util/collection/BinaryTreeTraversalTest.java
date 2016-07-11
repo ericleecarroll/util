@@ -18,7 +18,7 @@ public class BinaryTreeTraversalTest {
 
     @Before
     public void before() {
-        tree = BinaryTreeArray.of(Arrays.asList('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'));
+        tree = BinaryTreeArray.treeOf(Arrays.asList('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'));
     }
 
     @Test

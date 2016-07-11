@@ -7,9 +7,11 @@ import java.util.Optional;
 /**
  * Nearly complete binary tree, stored in an array(list)
  *
+ * Can be constructed as a binary tree (treeOf, emptyTree) or heap (heapOf, emptyHeap)
+ *
  * Created by Eric on 7/3/2016.
  */
-public class BinaryTreeArray<E> implements BinaryTree<E> {
+public class BinaryTreeArray<E extends Comparable<E>> implements BinaryTree<E>, Heap<E> {
 
     // our node key
     //
@@ -47,8 +49,20 @@ public class BinaryTreeArray<E> implements BinaryTree<E> {
      * @param <F> type of values stored in tree
      * @return new tree
      */
-    public static <F> BinaryTree of(final List<F> source) {
+    public static <F extends Comparable<F>> BinaryTree treeOf(final List<F> source) {
         return new BinaryTreeArray(source);
+    }
+
+    /**
+     * Return a new heap, initialized with the passed source
+     * @param source to initialize heap
+     * @param <F> type of values stored in heap
+     * @return new heap
+     */
+    public static <F extends Comparable<F>> Heap heapOf(final List<F> source) {
+        BinaryTreeArray<F> heap = new BinaryTreeArray(source);
+        heap.buildMaxHeap();
+        return heap;
     }
 
     /**
@@ -56,9 +70,16 @@ public class BinaryTreeArray<E> implements BinaryTree<E> {
      * @param <F> type of values stored in tree
      * @return new tree
      */
-    public static <F> BinaryTree empty() {
+    public static <F extends Comparable<F>> BinaryTree emptyTree() {
         return new BinaryTreeArray();
     }
+
+    /**
+     * Return a new, empty heap
+     * @param <F> type of values sorted in heap
+     * @return new heap
+     */
+    public static <F extends Comparable<F>> Heap emptyHeap() { return new BinaryTreeArray<>(); }
     
     // internal storage of tree
     private final List<E> array;
@@ -228,6 +249,46 @@ public class BinaryTreeArray<E> implements BinaryTree<E> {
     }
 
     /**
+     * Push a value into the heap
+     * @param value value to push
+     */
+    @Override
+    public void push(final E value) {
+
+        // add it to end of the tree
+        // bubble it up to a legal spot
+        bubbleUp(add(value));
+    }
+
+    /**
+     * Pop the maximum value off of the heap
+     * @return maximum value
+     */
+    @Override
+    public E pop() {
+
+        // sanity check - confirm tree is not empty
+        if (!hasRoot()) { throw new IllegalStateException("empty"); }
+
+        // max element is held at the root
+        NodeKey root = getRoot().get();
+        E value = get(root);
+
+        // swap final element into root's position
+        // and then shrink array
+        swap(root, IndexKey.of(array.size() - 1));
+        array.remove(array.size() -1);
+
+        // re-establish heap, unless pop has emptied the heap
+        if (hasRoot()) {
+            maxHeapify(root);
+        }
+
+        // done!
+        return value;
+    }
+
+    /**
      * Return true if the given index does not reference an element in the heap
      * @param index index we are checking
      * @return true if out of bounds
@@ -273,6 +334,82 @@ public class BinaryTreeArray<E> implements BinaryTree<E> {
     private void confirmInBounds(final int index) {
         if (outOfBounds(index)) {
             throw new IndexOutOfBoundsException(String.format("Index %d out of bounds, size=%d", index, array.size()));
+        }
+    }
+
+    /**
+     * Establishes max-heapiness constraint on binary tree
+     */
+    private void buildMaxHeap() {
+
+        // max-heapify from the bottom up, minus the leaves (which are in-order by definition)
+        for (int index = (array.size() / 2) - 1 ; index >= 0 ; index--) {
+            maxHeapify(IndexKey.of(index));
+        }
+    }
+
+    /**
+     * Assumes the trees rooted at left and right are max heaps, but that the specified root might be smaller than a
+     * child.  This method ensures the tree rooted at the specified root is a max heap.
+     * @param rootKey index of root to max-heapify
+     */
+    private void maxHeapify(final NodeKey rootKey) {
+
+        // default to root
+        Optional<NodeKey> largest = Optional.of(rootKey);
+
+        // check left
+        final Optional<NodeKey> left = getLeft(rootKey);
+        if (isLargerThan(left, largest)) {
+            largest = left;
+        }
+
+        // check right
+        final Optional<NodeKey> right = getRight(rootKey);
+        if (isLargerThan(right, largest)) {
+            largest = right;
+        }
+
+        // if root is not largest, swap with largest and continue downwards
+        if (largest.filter(key -> key != rootKey).isPresent()) {
+            swap(largest.get(), rootKey);
+            maxHeapify(largest.get());
+        }
+    }
+
+    /**
+     * Returns true if the value held by key1 is larger than the value held by key2
+     * Returns false if either key is empty
+     * @param key1 comparing this
+     * @param key2 comparing this
+     * @return key1's value is larger
+     */
+    private boolean isLargerThan(Optional<NodeKey> key1, Optional<NodeKey> key2) {
+
+        // optional values from optional keys!
+        Optional<E> value1 = key1.map(this::get);
+        Optional<E> value2 = key2.map(this::get);
+
+        // candidate not set
+        if (!value1.isPresent()) { return false; }
+
+        // compare
+        boolean larger = value2.map(v -> v.compareTo(value1.get()) <= 0).orElse(false);
+        return larger;
+    }
+
+    /**
+     * Swaps the node upwards while the value at the given key is larger than its parent's
+     * @param key node to bubble up
+     */
+    private void bubbleUp(NodeKey key) {
+
+        // swap while it has a parent, and the child's value is larger than the parent's value...
+        Optional<NodeKey> candidate = Optional.of(key);
+        while(isLargerThan(candidate, getParent(candidate.get()))) {
+            Optional<NodeKey> parent = getParent(candidate.get());
+            swap(candidate.get(), parent.get());
+            candidate = parent;
         }
     }
 }

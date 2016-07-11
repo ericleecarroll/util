@@ -1,7 +1,5 @@
 package com.mrsnottypants.util.collection;
 
-import com.mrsnottypants.test.Exceptions;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.Assert;
@@ -29,7 +27,7 @@ public class BinaryTreeArrayTest {
     @Before
     public void before() {
 
-        tree = BinaryTreeArray.of(SOURCE);
+        tree = BinaryTreeArray.treeOf(SOURCE);
 
         rootKey = tree.getRoot().get();
         leftKey = tree.getLeft(rootKey).get();
@@ -47,7 +45,7 @@ public class BinaryTreeArrayTest {
     @Test
     public void testAdd() {
 
-        BinaryTree<String> emptyTree = BinaryTreeArray.empty();
+        BinaryTree<String> emptyTree = BinaryTreeArray.emptyTree();
         Assert.assertEquals(0, emptyTree.size());
 
         for (String entry : SOURCE) {
@@ -85,7 +83,7 @@ public class BinaryTreeArrayTest {
         Assert.assertEquals(SOURCE.get(0), tree.get(rootKey));
 
         // out of bounds
-        tree = BinaryTreeArray.empty();
+        tree = BinaryTreeArray.emptyTree();
         Optional<NodeKey> root = tree.getRoot();
         Assert.assertFalse(root.isPresent());
     }
