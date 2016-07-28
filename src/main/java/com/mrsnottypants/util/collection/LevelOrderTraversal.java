@@ -6,7 +6,7 @@ import java.util.Queue;
 
 /**
  * Level order traversal of a binary tree
- * 
+ *
  * Created by Eric on 7/11/2016.
  */
 public class LevelOrderTraversal<E> implements Iterator<E> {
